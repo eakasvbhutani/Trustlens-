@@ -1,0 +1,201 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --bg-dark: #08090C;
+    --bg-surface: #0E1017;
+    --bg-surface-hover: #141722;
+    --border-subtle: rgba(255, 255, 255, 0.07);
+    --border-highlight: rgba(255, 255, 255, 0.15);
+
+    --emerald-primary: #10B981;
+    --amber-primary: #F59E0B;
+    --rose-primary: #F43F5E;
+    --accent-indigo: #6366F1;
+
+    /* Motion tokens. Built-in CSS easings are too weak for deliberate UI;
+       every transition in this app resolves to one of these three. */
+    --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+    --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+    --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+
+    --duration-press: 160ms;
+    --duration-hover: 200ms;
+    --duration-panel: 250ms;
+  }
+
+  body {
+    background-color: var(--bg-dark);
+    color: #E2E8F0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    letter-spacing: -0.011em;
+    overflow-x: hidden;
+  }
+}
+
+/* Background Subtle Technical Grid Overlay */
+.bg-tech-grid {
+  background-image: linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* Sophisticated Minimalist Cards */
+.pro-card,
+.glass-card {
+  background: rgba(14, 16, 23, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.5);
+  transition:
+    border-color var(--duration-hover) var(--ease-out),
+    transform var(--duration-hover) var(--ease-out),
+    box-shadow var(--duration-hover) var(--ease-out);
+}
+
+/* Hover motion is gated: touch devices fire a false hover on tap and it sticks. */
+@media (hover: hover) and (pointer: fine) {
+  .pro-card-hover:hover {
+    border-color: rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 30px -4px rgba(0, 0, 0, 0.7);
+  }
+
+  .pro-card-interactive:hover {
+    border-color: rgba(99, 102, 241, 0.4);
+    background: rgba(18, 21, 31, 0.85);
+  }
+
+  .hover-lift:hover {
+    transform: translateY(-4px);
+  }
+}
+
+/* Press feedback. Any pressable element gets it — the interface has to
+   acknowledge the press, and scale() brings the label and icon along.
+   This declares the colour transitions too, so it never has to be paired
+   with a Tailwind `transition-*` utility (the two would fight over the
+   `transition` shorthand and one would silently win). */
+.press {
+  transition:
+    transform var(--duration-press) var(--ease-out),
+    background-color var(--duration-hover) var(--ease-out),
+    border-color var(--duration-hover) var(--ease-out),
+    color var(--duration-hover) var(--ease-out);
+}
+
+.press:active {
+  transform: scale(0.97);
+}
+
+/* ── Entrances ────────────────────────────────────────────────────────
+   Applied only to surfaces a user sees once per task (the results
+   dashboard, the marketing sections) — never to anything on a hot path.
+   Stagger is decorative and never blocks interaction: the content is
+   already in the DOM and clickable, it is only being revealed. */
+
+@keyframes reveal-up {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.reveal {
+  opacity: 0;
+  transform: translateY(10px);
+  animation: reveal-up 320ms var(--ease-out) forwards;
+}
+
+/* 60ms between items — inside the 30–80ms band. Longer reads as slow. */
+.reveal-stagger > * {
+  opacity: 0;
+  transform: translateY(10px);
+  animation: reveal-up 320ms var(--ease-out) forwards;
+}
+.reveal-stagger > *:nth-child(1) { animation-delay: 0ms; }
+.reveal-stagger > *:nth-child(2) { animation-delay: 60ms; }
+.reveal-stagger > *:nth-child(3) { animation-delay: 120ms; }
+.reveal-stagger > *:nth-child(4) { animation-delay: 180ms; }
+.reveal-stagger > *:nth-child(5) { animation-delay: 240ms; }
+.reveal-stagger > *:nth-child(6) { animation-delay: 300ms; }
+
+/* A completed pipeline stage confirms itself. Scales from 0.8, never
+   from 0 — nothing in the real world appears from nothing. */
+@keyframes confirm-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.confirm-pop {
+  animation: confirm-pop 200ms var(--ease-out) backwards;
+}
+
+/* Reduced motion means fewer and gentler animations, not zero:
+   opacity and colour feedback stay, positional movement goes. */
+@media (prefers-reduced-motion: reduce) {
+  .press,
+  .pro-card,
+  .glass-card {
+    transition-duration: 0.01ms;
+  }
+
+  .press:active,
+  .hover-lift:hover {
+    transform: none;
+  }
+
+  .animate-pulse,
+  .animate-spin {
+    animation-duration: 2s;
+  }
+
+  /* Entrances keep the opacity fade (it aids comprehension) and drop
+     the movement, which is the part that causes motion sickness. */
+  .reveal,
+  .reveal-stagger > *,
+  .confirm-pop {
+    transform: none;
+    animation-name: reveal-fade;
+    animation-delay: 0ms;
+    animation-duration: 200ms;
+  }
+}
+
+@keyframes reveal-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Metallic keyline divider */
+.keyline-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.12), transparent);
+}
+
+/* Clean Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #08090C;
+}
+::-webkit-scrollbar-thumb {
+  background: #1E2330;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #2D3548;
+}
